@@ -79,34 +79,38 @@ app.get('/logout', function(req, res) {
 });
 
 app.get('/test', function(req, res) {
-  if (req.session.tokens != undefined){
-      var tokensObj = req.session.tokens
-      var platform = rcsdk.platform()
-      platform.auth().setData(tokensObj)
-      if (platform.loggedIn()){
-          if (req.query.api == "extension"){
-            var endpoint = "/restapi/v1.0/account/~/extension";
-            return callGetMethod(platform, endpoint, res)
-          }else if (req.query.api == "extension-call-log"){
-            var endpoint = "/restapi/v1.0/account/~/extension/~/call-log";
-            return callGetMethod(platform, endpoint, res)
-          }if (req.query.api == "account-call-log"){
-            var endpoint = "/restapi/v1.0/account/~/call-log";
-            return callGetMethod(platform, endpoint, res)
-          }else {
-            return res.render('test')
-          }
-      }
-  }
-  res.redirect("/")
+    if (req.session.tokens != undefined){
+        var tokensObj = req.session.tokens
+        var platform = rcsdk.platform()
+        platform.auth().setData(tokensObj)
+        if (platform.loggedIn()){
+            if (req.query.api == "extension"){
+                var endpoint = "/restapi/v1.0/account/~/extension";
+                return callGetMethod(platform, endpoint, res);
+            } else if (req.query.api == "extension-call-log"){
+                var endpoint = "/restapi/v1.0/account/~/extension/~/call-log";
+                return callGetMethod(platform, endpoint, res);
+            } else if (req.query.api == "account-call-log"){
+                var endpoint = "/restapi/v1.0/account/~/call-log";
+                return callGetMethod(platform, endpoint, res);
+            } else if (req.query.api == "call-queue-presence"){
+                var endpoint = `/restapi/v1.0/account/${process.env.RC_ACCOUNT_ID}/call-queues/${process.env.RC_QUEUE_ID}/presence`;
+                return callGetMethod(platform, endpoint, res);
+            } else {
+                return res.render('test');
+            }
+        }
+    }
+    res.redirect("/");
 });
+
 
 function callGetMethod(platform, endpoint, res){
     platform.get(endpoint)
     .then(function(resp){
-        res.send(JSON.stringify(resp.json()))
+        res.send(JSON.stringify(resp.json(), null, 2));
     })
     .catch(function(e){
-        res.send("Error")
-    })
+        res.send("Error: " + e.message);
+    });
 }
